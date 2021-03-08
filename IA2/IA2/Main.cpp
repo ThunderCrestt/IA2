@@ -32,26 +32,6 @@ int main()
 		}
 	}
 
-	AssignValue(variables[0], 1);
-	AssignValue(variables[1], 2);
-	AssignValue(variables[9], 4);
-	AssignValue(variables[10], 5);
-	AssignValue(variables[11], 6);
-	AssignValue(variables[19], 8);
-	AssignValue(variables[20], 9);
-
-	AssignValue(variables[36], 2);
-	AssignValue(variables[37], 1);
-	AssignValue(variables[39], 4);
-	AssignValue(variables[40], 5);
-	AssignValue(variables[41], 6);
-	AssignValue(variables[42], 3);
-	AssignValue(variables[43], 8);
-	AssignValue(variables[44], 9);
-
-	//SelectUnassignedVariable();
-	std::cout << LeastRestrainingValue(variables[2]) << std::endl;
-
 	return EXIT_SUCCESS;
 }
 
