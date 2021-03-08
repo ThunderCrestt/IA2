@@ -19,6 +19,8 @@ public:
 
 	Variable(int index, const std::map<Variable*, int>& assignment);
 
+	int GetIndex() { return index; }
+
 	bool GetAssigned() { return bAssigned; }
 	void SetAssigned(bool value) { bAssigned = value; }
 

@@ -1,9 +1,11 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <deque>
 #include "Constraint.h"
 #include "Variable.h"
 
+void AC3();
 void AddConstraint(Constraint* newConstraint);
 void AssignValue(Variable* variable, int value);
 int LeastRestrainingValue(Variable* targetVariable);
@@ -148,4 +150,53 @@ int LeastRestrainingValue(Variable* targetVariable)
 	}
 
 	return chosenValue;
+}
+
+bool RemoveInconsistentValues(Constraint& constraint)
+{
+	bool removed = false;
+
+	int secondIndex = constraint.Second()->GetIndex();
+	std::vector<int> firstDomain = constraint.First()->GetDomain(), secondDomain = constraint.Second()->GetDomain();
+
+	for (auto currentFirstIt = firstDomain.begin(); currentFirstIt != firstDomain.end();)
+	{
+		bool noneSatisfies = true;
+		for (auto currentSecondValue : secondDomain)
+		{
+			if (*currentFirstIt != currentSecondValue)
+			{
+				noneSatisfies = false;
+				break;
+			}
+		}
+		if (noneSatisfies) constraint.First()->RemoveLegalValue(*currentFirstIt);
+		currentFirstIt++;
+	}
+
+	return removed;
+}
+
+void AC3()
+{
+	std::deque<Constraint> constraintsQueue;
+	for(auto constraint : constraints)
+	{
+		constraintsQueue.push_back(*constraint);
+		constraintsQueue.push_back(Constraint(constraint->Second(), constraint->First()));
+	}
+
+	while(constraintsQueue.size() != 0)
+	{
+		Constraint currentConstraint = constraintsQueue.front();
+		constraintsQueue.pop_front();
+		if(RemoveInconsistentValues(currentConstraint))
+		{
+			std::vector<Variable*> neighbours = currentConstraint.First()->GetNeighbours();
+			for(auto neighbour : neighbours)
+			{
+				constraintsQueue.push_back(Constraint(neighbour, currentConstraint.First()));
+			}
+		}
+	}
 }
