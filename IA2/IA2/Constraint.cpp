@@ -1,6 +1,12 @@
 #include "Constraint.h"
 #include "Variable.h"
 
+Constraint::Constraint(Variable* firstVariable, Variable* secondVariable)
+{
+	this->firstVariable = firstVariable;
+	this->secondVariable = secondVariable;
+}
+
 bool Constraint::IsAssignmentValid(int valueToAssign, Variable* targetVariable, const std::map<Variable*, int>& assignment)
 {
 	Variable* otherVariable = nullptr;
