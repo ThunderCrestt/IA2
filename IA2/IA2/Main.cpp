@@ -15,7 +15,7 @@ std::map<Variable*, int> assignment;
 
 std::vector<Constraint*> constraints;
 std::vector<Variable*> variables;
-
+std::map<Variable*, int> failure = { NULL,NULL };
 
 
 int main()
@@ -35,6 +35,45 @@ int main()
 	}
 
 	return EXIT_SUCCESS;
+}
+
+bool backTrackingSearch()
+{
+
+}
+
+std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment)
+{
+	if (assignmentIsComplete(assignment)) { return assignment; }
+	Variable* var = SelectUnassignedVariable();
+	for (int val : var->GetDomain())
+	{
+		bool consistantValue = true;
+		for (Constraint* constaint : var->getConstraints())
+		{
+			if (!constaint->IsAssignmentValid(val, var, assignment))
+			{
+				consistantValue = false;
+			}
+		}
+		if (consistantValue)
+		{
+			AssignValue(var, val);
+			std::map<Variable*, int> result = recursiveBackTrackingSearch(assignment);
+			if (result != failure)
+			{
+				return result;
+			}
+			UnassignValue(var);
+		}
+	}
+	return failure;
+}
+
+bool assignmentIsComplete(const std::map<Variable*, int> &assignment)
+{
+	std::cout << assignment.size();
+	return assignment.size()==81; //toutes les cases ont un chiffres
 }
 
 void AssignValue(Variable* variable, int value)

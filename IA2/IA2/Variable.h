@@ -35,6 +35,8 @@ public:
 	bool HasLegalValue(int value);
 	void RemoveLegalValue(int value);
 	std::vector<int>& GetDomain() { return domain; }
+	std::vector<Constraint*>& getConstraints() { return constraints; }
+
 	void AddConstraint(Constraint* value) { constraints.push_back(value); }
 
 	void RemoveAssignedValueFromNeighbours(int assignedValue);
