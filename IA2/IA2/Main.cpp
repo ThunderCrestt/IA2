@@ -8,18 +8,23 @@
 void AC3();
 void AddConstraint(Constraint* newConstraint);
 void AssignValue(Variable* variable, int value);
+void UnassignValue(Variable* variable);
 int LeastRestrainingValue(Variable* targetVariable);
+std::map<Variable*, int> backTrackingSearch();
+std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment);
+bool assignmentIsComplete(const std::map<Variable*, int>& assignment);
 Variable* SelectUnassignedVariable();
 
 std::map<Variable*, int> assignment;
 
 std::vector<Constraint*> constraints;
 std::vector<Variable*> variables;
-std::map<Variable*, int> failure = { NULL,NULL };
+std::map<Variable*, int> failure;
 
 
 int main()
 {
+	failure.emplace(nullptr, -1);
 	for(int i = 0; i < 81; i++)
 	{
 		variables.push_back(new Variable(i, assignment));
@@ -33,13 +38,14 @@ int main()
 			AddConstraint(new Constraint(variable, neighbour));
 		}
 	}
-
+	backTrackingSearch();
 	return EXIT_SUCCESS;
 }
 
-bool backTrackingSearch()
+std::map<Variable*, int> backTrackingSearch()
 {
-
+	std::cout << assignment[0];
+	return recursiveBackTrackingSearch(assignment);
 }
 
 std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment)
