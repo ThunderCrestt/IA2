@@ -4,6 +4,9 @@
 #include <deque>
 #include "Constraint.h"
 #include "Variable.h"
+#include <fstream>
+#include <string>
+#include "Sudoku.h"
 
 void AC3();
 void AddConstraint(Constraint* newConstraint);
@@ -20,6 +23,15 @@ std::vector<Variable*> variables;
 
 int main()
 {
+//recuperation du sudoku
+	std::ifstream importSudoku{ "1.ss" };
+	std::string sudoku;
+	while (importSudoku.good()) {
+		sudoku = sudoku+(char)importSudoku.get();
+	}
+	Sudoku* mySudoku = new Sudoku(sudoku);
+	mySudoku->printSudoku();
+
 	for(int i = 0; i < 81; i++)
 	{
 		variables.push_back(new Variable(i, assignment));
