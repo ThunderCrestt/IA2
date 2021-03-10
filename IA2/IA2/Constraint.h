@@ -23,5 +23,6 @@ public:
 		return this->firstVariable == other.firstVariable && this->secondVariable == other.secondVariable 
 			|| this->secondVariable == other.firstVariable && this->firstVariable == other.secondVariable;
 	}
+
 };
 

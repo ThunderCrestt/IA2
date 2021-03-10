@@ -8,18 +8,23 @@
 void AC3();
 void AddConstraint(Constraint* newConstraint);
 void AssignValue(Variable* variable, int value);
+void UnassignValue(Variable* variable);
 int LeastRestrainingValue(Variable* targetVariable);
+std::map<Variable*, int> backTrackingSearch();
+std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment);
+bool assignmentIsComplete(const std::map<Variable*, int>& assignment);
 Variable* SelectUnassignedVariable();
 
 std::map<Variable*, int> assignment;
 
 std::vector<Constraint*> constraints;
 std::vector<Variable*> variables;
-
+std::map<Variable*, int> failure;
 
 
 int main()
 {
+	failure.emplace(nullptr, -1);
 	for(int i = 0; i < 81; i++)
 	{
 		variables.push_back(new Variable(i, assignment));
@@ -33,8 +38,48 @@ int main()
 			AddConstraint(new Constraint(variable, neighbour));
 		}
 	}
-
+	backTrackingSearch();
 	return EXIT_SUCCESS;
+}
+
+std::map<Variable*, int> backTrackingSearch()
+{
+	std::cout << assignment[0];
+	return recursiveBackTrackingSearch(assignment);
+}
+
+std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment)
+{
+	if (assignmentIsComplete(assignment)) { return assignment; }
+	Variable* var = SelectUnassignedVariable();
+	for (int val : var->GetDomain())
+	{
+		bool consistantValue = true;
+		for (Constraint* constaint : var->getConstraints())
+		{
+			if (!constaint->IsAssignmentValid(val, var, assignment))
+			{
+				consistantValue = false;
+			}
+		}
+		if (consistantValue)
+		{
+			AssignValue(var, val);
+			std::map<Variable*, int> result = recursiveBackTrackingSearch(assignment);
+			if (result != failure)
+			{
+				return result;
+			}
+			UnassignValue(var);
+		}
+	}
+	return failure;
+}
+
+bool assignmentIsComplete(const std::map<Variable*, int> &assignment)
+{
+	std::cout << assignment.size();
+	return assignment.size()==81; //toutes les cases ont un chiffres
 }
 
 void AssignValue(Variable* variable, int value)
