@@ -4,6 +4,7 @@
 #include <deque>
 #include "Constraint.h"
 #include "Variable.h"
+#include "Sudoku.h"
 
 void AC3();
 void AddConstraint(Constraint* newConstraint);
@@ -24,6 +25,15 @@ std::map<Variable*, int> failure;
 
 int main()
 {
+	//recuperation du sudoku
+	std::ifstream importSudoku{ "1.ss" };
+	std::string sudoku;
+	while (importSudoku.good()) {
+		sudoku = sudoku + (char)importSudoku.get();
+	}
+	Sudoku* mySudoku = new Sudoku(sudoku);
+	mySudoku->printSudoku();
+
 	failure.emplace(nullptr, -1);
 	for(int i = 0; i < 81; i++)
 	{
