@@ -18,13 +18,13 @@ std::map<Variable*, int> backTrackingSearch();
 std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment);
 bool assignmentIsComplete(const std::map<Variable*, int>& assignment);
 Variable* SelectUnassignedVariable();
-
+void setCaseFromIndex(int index, int val);
 std::map<Variable*, int> assignment;
 
 std::vector<Constraint*> constraints;
 std::vector<Variable*> variables;
 std::map<Variable*, int> failure;
-
+Sudoku* mySudoku;
 
 int main()
 {
@@ -38,6 +38,8 @@ int main()
 	{
 		variables.push_back(new Variable(i, assignment));
 	}
+
+	setCaseFromIndex(17, 9);
 	for(Variable* variable : variables)
 	{
 		variable->SetupNeighbours(variables);
@@ -53,7 +55,7 @@ int main()
 
 std::map<Variable*, int> backTrackingSearch()
 {
-	std::cout << assignment[0];
+	//std::cout << assignment[0];
 	return recursiveBackTrackingSearch(assignment);
 }
 
@@ -87,7 +89,7 @@ std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& a
 
 bool assignmentIsComplete(const std::map<Variable*, int> &assignment)
 {
-	std::cout << assignment.size();
+	//std::cout << assignment.size();
 	return assignment.size()==81; //toutes les cases ont un chiffres
 }
 
@@ -96,6 +98,8 @@ void AssignValue(Variable* variable, int value)
 	assignment.emplace(variable, value);
 	variable->RemoveAssignedValueFromNeighbours(value);
 	variable->SetAssigned(true);
+	setCaseFromIndex(variable->GetIndex(), value);
+	mySudoku->printSudoku();
 }
 
 void UnassignValue(Variable* variable)
@@ -107,6 +111,8 @@ void UnassignValue(Variable* variable)
 	{
 		neighbour->ResetDomain(assignment);
 	}
+	setCaseFromIndex(variable->GetIndex(), 0);
+	mySudoku->printSudoku();
 }
 
 void AddConstraint(Constraint* newConstraint)
@@ -278,4 +284,11 @@ std::string recoverSudoku()
 		sudoku = sudoku + (char)importSudoku.get();
 	}
 	return sudoku;
+}
+
+void setCaseFromIndex(int index,int val)
+{
+	int j= index%9;
+	int i = index/9;
+	mySudoku->setCase(i, j,val);
 }
