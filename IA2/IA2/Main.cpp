@@ -31,7 +31,7 @@ int main()
 {
 	//recuperation du sudoku
 	std::string sudoku = recoverSudoku();
-	Sudoku* mySudoku = new Sudoku(sudoku);
+	mySudoku = new Sudoku(sudoku);
 	mySudoku->printSudoku();
 
 	failure.emplace(nullptr, -1);
