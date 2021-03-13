@@ -13,9 +13,6 @@ public:
 	int getCase(int i, int j);
 	void setCase(int i, int j, int val);
 
-
-
-private:
 	int m_sudoku[9][9] = { 0 };
 
 

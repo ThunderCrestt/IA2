@@ -8,7 +8,7 @@
 
 void AC3();
 void AddConstraint(Constraint* newConstraint);
-void AssignValue(Variable* variable, int value);
+void AssignValue(Variable* variable, int value, bool withPrint = true);
 void UnassignValue(Variable* variable);
 int LeastRestrainingValue(Variable* targetVariable);
 std::map<Variable*, int> backTrackingSearch();
@@ -16,6 +16,7 @@ std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& a
 bool assignmentIsComplete(const std::map<Variable*, int>& assignment);
 Variable* SelectUnassignedVariable();
 void setCaseFromIndex(int index, int val);
+void setupAssignement(const Sudoku mySudoku);
 std::map<Variable*, int> assignment;
 
 std::vector<Constraint*> constraints;
@@ -40,7 +41,6 @@ int main()
 		variables.push_back(new Variable(i, assignment));
 	}
 
-	setCaseFromIndex(17, 9);
 	for(Variable* variable : variables)
 	{
 		variable->SetupNeighbours(variables);
@@ -50,6 +50,7 @@ int main()
 			AddConstraint(new Constraint(variable, neighbour));
 		}
 	}
+	setupAssignement(*mySudoku);
 	backTrackingSearch();
 	return EXIT_SUCCESS;
 }
@@ -94,13 +95,17 @@ bool assignmentIsComplete(const std::map<Variable*, int> &assignment)
 	return assignment.size()==81; //toutes les cases ont un chiffres
 }
 
-void AssignValue(Variable* variable, int value)
+void AssignValue(Variable* variable, int value,bool withPrint)
 {
 	assignment.emplace(variable, value);
 	variable->RemoveAssignedValueFromNeighbours(value);
 	variable->SetAssigned(true);
-	setCaseFromIndex(variable->GetIndex(), value);
-	mySudoku->printSudoku();
+	if (withPrint)
+	{
+		setCaseFromIndex(variable->GetIndex(), value);
+		mySudoku->printSudoku();
+	}
+
 }
 
 void UnassignValue(Variable* variable)
@@ -267,4 +272,18 @@ void setCaseFromIndex(int index,int val)
 	int j= index%9;
 	int i = index/9;
 	mySudoku->setCase(i, j,val);
+}
+
+void setupAssignement(const Sudoku mySudoku)
+{
+	for (int i = 0; i < 9; i++)
+	{
+		for (int j = 0; j < 9; j++)
+		{
+			if (mySudoku.m_sudoku[i][j] != 0)
+			{
+				AssignValue(variables[i * 9 + j], mySudoku.m_sudoku[i][j],false);
+			}
+		}
+	}
 }
