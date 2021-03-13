@@ -10,6 +10,8 @@ public:
 	~Sudoku();
 
 	void printSudoku();
+	int getCase(int i, int j);
+	void setCase(int i, int j, int val);
 	
 
 

@@ -45,6 +45,7 @@ Sudoku::~Sudoku()
 
 void Sudoku::printSudoku()
 {
+	system("CLS");
 	std::cout << "\n";
 	for (int j = 0; j < 9; j++)
 	{
@@ -73,4 +74,14 @@ void Sudoku::printSudoku()
 
 	}
 	std::cout << "\n";
+}
+
+int Sudoku::getCase(int i, int j)
+{
+	return (int)m_sudoku[i][j];
+}
+
+void Sudoku::setCase(int i, int j, int val)
+{
+	m_sudoku[i][j] = val;
 }

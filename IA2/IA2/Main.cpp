@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include "Sudoku.h"
+#include <thread>
 
 void AC3();
 void AddConstraint(Constraint* newConstraint);
