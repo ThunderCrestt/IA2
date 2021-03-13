@@ -5,12 +5,15 @@
 #include "Constraint.h"
 #include "Variable.h"
 #include "Sudoku.h"
+#include <cstdlib>
+#include <locale>
 
 void AC3();
 void AddConstraint(Constraint* newConstraint);
 void AssignValue(Variable* variable, int value);
 void UnassignValue(Variable* variable);
 int LeastRestrainingValue(Variable* targetVariable);
+std::string recoverSudoku();
 std::map<Variable*, int> backTrackingSearch();
 std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment);
 bool assignmentIsComplete(const std::map<Variable*, int>& assignment);
@@ -26,11 +29,7 @@ std::map<Variable*, int> failure;
 int main()
 {
 	//recuperation du sudoku
-	std::ifstream importSudoku{ "1.ss" };
-	std::string sudoku;
-	while (importSudoku.good()) {
-		sudoku = sudoku + (char)importSudoku.get();
-	}
+	std::string sudoku = recoverSudoku();
 	Sudoku* mySudoku = new Sudoku(sudoku);
 	mySudoku->printSudoku();
 
@@ -254,4 +253,29 @@ void AC3()
 			}
 		}
 	}
+}
+
+std::string recoverSudoku() 
+{
+	std::locale::global(std::locale{ "" });
+	std::cout << "Entrez un chiffre entre 1 et 6 ou le nom du nouveau sudoku importé :\n";
+	std::string i;
+	std::cin >> i;
+	std::ifstream importSudoku{ "Sudoku/" + i + ".ss" };
+	while (!importSudoku.good())
+	{
+		importSudoku.close();
+		std::cout << "Aucun fichier correspondant, veuillez reessayer : \n";
+		std::cin >> i;
+		importSudoku.open("Sudoku/" + i + ".ss");
+		if (importSudoku.good())
+		{
+			break;
+		}
+	}
+	std::string sudoku;
+	while (importSudoku.good()) {
+		sudoku = sudoku + (char)importSudoku.get();
+	}
+	return sudoku;
 }
