@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <map>
 #include <vector>
 #include <deque>
@@ -8,16 +9,16 @@
 #include <cstdlib>
 #include <locale>
 
-void AC3();
+bool AC3();
 void AddConstraint(Constraint* newConstraint);
 void AssignValue(Variable* variable, int value, bool withPrint = true);
 void UnassignValue(Variable* variable);
-int LeastRestrainingValue(Variable* targetVariable);
+std::vector<int> LeastConstrainingValue(Variable* targetVariable);
 std::string recoverSudoku();
 std::map<Variable*, int> backTrackingSearch();
 std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment);
 bool assignmentIsComplete(const std::map<Variable*, int>& assignment);
-Variable* SelectUnassignedVariable();
+Variable* SelectUnassignedVariable(std::map<Variable*, int>& assignment);
 void setCaseFromIndex(int index, int val);
 void setupAssignement(const Sudoku mySudoku);
 std::map<Variable*, int> assignment;
@@ -63,26 +64,33 @@ std::map<Variable*, int> backTrackingSearch()
 std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& assignment)
 {
 	if (assignmentIsComplete(assignment)) { return assignment; }
-	Variable* var = SelectUnassignedVariable();
-	for (int val : var->GetDomain())
+	Variable* var = SelectUnassignedVariable(assignment);
+	if(var)
 	{
-		bool consistantValue = true;
-		for (Constraint* constaint : var->getConstraints())
+		std::vector<int> orderedValues = LeastConstrainingValue(var);
+		for (int val : orderedValues)
 		{
-			if (!constaint->IsAssignmentValid(val, var, assignment))
+			bool consistantValue = true;
+			for (Constraint* constraint : var->getConstraints())
 			{
-				consistantValue = false;
+				if (!constraint->IsAssignmentValid(val, var, assignment))
+				{
+					consistantValue = false;
+				}
 			}
-		}
-		if (consistantValue)
-		{
-			AssignValue(var, val);
-			std::map<Variable*, int> result = recursiveBackTrackingSearch(assignment);
-			if (result != failure)
+			if (consistantValue)
 			{
-				return result;
+				AssignValue(var, val);
+				if (AC3())
+				{
+					std::map<Variable*, int> result = recursiveBackTrackingSearch(assignment);
+					if (result != failure)
+					{
+						return result;
+					}
+				}
+				UnassignValue(var);
 			}
-			UnassignValue(var);
 		}
 	}
 	return failure;
@@ -111,10 +119,9 @@ void UnassignValue(Variable* variable)
 {
 	assignment.erase(variable);
 	variable->SetAssigned(false);
-	std::vector<Variable*> neighbours = variable->GetNeighbours();
-	for(auto neighbour : neighbours)
+	for(auto variable : variables)
 	{
-		neighbour->ResetDomain(assignment);
+		variable->ResetDomain(assignment);
 	}
 	setCaseFromIndex(variable->GetIndex(), 0);
 	mySudoku->printSudoku();
@@ -136,10 +143,10 @@ void AddConstraint(Constraint* newConstraint)
 	newConstraint->Second()->AddConstraint(newConstraint);
 }
 
-Variable* MinimumRemainingValues()
+std::vector<Variable*> MinimumRemainingValues()
 {
 	int currentMinimum = INT_MAX, duplicateCount = 0;
-	Variable* chosenVariable = nullptr;
+	std::vector<Variable*> minimumVariables;
 
 	for(Variable* currentVariable : variables)
 	{
@@ -148,22 +155,21 @@ Variable* MinimumRemainingValues()
 			int variableValue = currentVariable->GetAmountOfLegalValues();
 			if (variableValue < currentMinimum)
 			{
-				chosenVariable = currentVariable;
+				minimumVariables.clear();
+				minimumVariables.push_back(currentVariable);
 				currentMinimum = variableValue;
-				duplicateCount = 0;
 			}
 			else if (variableValue == currentMinimum)
 			{
-				duplicateCount++;
+				minimumVariables.push_back(currentVariable);
 			}
 		}
 	}
 
-	if (duplicateCount > 0) return nullptr;
-	return chosenVariable;
+	return minimumVariables;
 }
 
-Variable* DegreeHeuristic()
+Variable* DegreeHeuristic(std::vector<Variable*> variables, std::map<Variable*, int>& assignment)
 {
 	int currentMaximum = 0;
 	Variable* chosenVariable = nullptr;
@@ -183,20 +189,28 @@ Variable* DegreeHeuristic()
 	return chosenVariable;
 }
 
-Variable* SelectUnassignedVariable()
+Variable* SelectUnassignedVariable(std::map<Variable*, int>& assignment)
 {
-	Variable* chosenVariable = MinimumRemainingValues();
-	if (chosenVariable == nullptr)
+	Variable* chosenVariable = nullptr;
+	std::vector<Variable*> minimumVariables = MinimumRemainingValues();
+	if (minimumVariables.size() == 1)
 	{
-		chosenVariable = DegreeHeuristic();
+		chosenVariable = minimumVariables[0];
 	}
+	else
+	{
+		chosenVariable = DegreeHeuristic(minimumVariables, assignment);
+	}
+	if (chosenVariable == nullptr) chosenVariable = minimumVariables[0];
+
 	return chosenVariable;
 }
 
-int LeastRestrainingValue(Variable* targetVariable)
+std::vector<int> LeastConstrainingValue(Variable* targetVariable)
 {
 	int currentMax = -1;
 	int chosenValue = -1;
+	std::vector<std::pair<int, int>> countVector;
 	std::vector<Variable*> neighbours = targetVariable->GetNeighbours();
 	for(int value : targetVariable->GetDomain())
 	{
@@ -206,22 +220,26 @@ int LeastRestrainingValue(Variable* targetVariable)
 			sum += neighbour->GetAmountOfLegalValues();
 			if (neighbour->HasLegalValue(value)) sum--;
 		}
-
-		if(sum > currentMax)
+		countVector.push_back(std::pair<int, int>(value, sum));
+	}
+	std::sort(countVector.begin(), countVector.end(), [](std::pair<int, int> left, std::pair<int, int> right)
 		{
-			currentMax = sum;
-			chosenValue = value;
-		}
+			return left.second > right.second;
+		});
+
+	std::vector<int> orderedValues;
+	for(auto currentValue : countVector)
+	{
+		orderedValues.push_back(currentValue.first);
 	}
 
-	return chosenValue;
+	return orderedValues;
 }
 
-bool RemoveInconsistentValues(Constraint& constraint)
+int RemoveInconsistentValues(Constraint& constraint)
 {
-	bool removed = false;
+	int removed = 0;
 
-	int secondIndex = constraint.Second()->GetIndex();
 	std::vector<int> firstDomain = constraint.First()->GetDomain(), secondDomain = constraint.Second()->GetDomain();
 
 	for (auto currentFirstIt = firstDomain.begin(); currentFirstIt != firstDomain.end();)
@@ -235,14 +253,22 @@ bool RemoveInconsistentValues(Constraint& constraint)
 				break;
 			}
 		}
-		if (noneSatisfies) constraint.First()->RemoveLegalValue(*currentFirstIt);
+		if (noneSatisfies)
+		{
+			constraint.First()->RemoveLegalValue(*currentFirstIt);
+			removed = 1;
+		}
 		currentFirstIt++;
+	}
+	if(constraint.First()->GetAmountOfLegalValues() == 0)
+	{
+		removed = -1;
 	}
 
 	return removed;
 }
 
-void AC3()
+bool AC3()
 {
 	std::deque<Constraint> constraintsQueue;
 	for(auto constraint : constraints)
@@ -255,7 +281,9 @@ void AC3()
 	{
 		Constraint currentConstraint = constraintsQueue.front();
 		constraintsQueue.pop_front();
-		if(RemoveInconsistentValues(currentConstraint))
+		
+		int result = RemoveInconsistentValues(currentConstraint);
+		if(result == 1)
 		{
 			std::vector<Variable*> neighbours = currentConstraint.First()->GetNeighbours();
 			for(auto neighbour : neighbours)
@@ -263,7 +291,12 @@ void AC3()
 				constraintsQueue.push_back(Constraint(neighbour, currentConstraint.First()));
 			}
 		}
+		else if(result == -1)
+		{
+			return false;
+		}
 	}
+	return true;
 }
 
 std::string recoverSudoku() 
