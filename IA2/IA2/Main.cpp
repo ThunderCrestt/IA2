@@ -6,6 +6,7 @@
 #include "Constraint.h"
 #include "Variable.h"
 #include "Sudoku.h"
+#include <time.h>
 #include <cstdlib>
 #include <locale>
 
@@ -51,7 +52,9 @@ int main()
 		}
 	}
 	setupAssignement(*mySudoku);
+	clock_t tStart = clock();
 	backTrackingSearch();
+	std::cout << (double)(clock() - tStart) / CLOCKS_PER_SEC << std::endl;
 	return EXIT_SUCCESS;
 }
 
@@ -214,17 +217,16 @@ std::vector<int> LeastConstrainingValue(Variable* targetVariable)
 	std::vector<Variable*> neighbours = targetVariable->GetNeighbours();
 	for(int value : targetVariable->GetDomain())
 	{
-		int sum = 0;
+		int removedValues = 0;
 		for(Variable* neighbour : neighbours)
 		{
-			sum += neighbour->GetAmountOfLegalValues();
-			if (neighbour->HasLegalValue(value)) sum--;
+			if (neighbour->HasLegalValue(value)) removedValues++;
 		}
-		countVector.push_back(std::pair<int, int>(value, sum));
+		countVector.push_back(std::pair<int, int>(value, removedValues));
 	}
 	std::sort(countVector.begin(), countVector.end(), [](std::pair<int, int> left, std::pair<int, int> right)
 		{
-			return left.second > right.second;
+			return left.second < right.second;
 		});
 
 	std::vector<int> orderedValues;
