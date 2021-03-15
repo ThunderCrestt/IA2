@@ -52,9 +52,12 @@ int main()
 		}
 	}
 	setupAssignement(*mySudoku);
+	system("pause");
 	clock_t tStart = clock();
 	backTrackingSearch();
 	std::cout << (double)(clock() - tStart) / CLOCKS_PER_SEC << std::endl;
+	
+	system("pause");
 	return EXIT_SUCCESS;
 }
 
