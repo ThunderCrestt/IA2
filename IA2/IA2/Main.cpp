@@ -22,7 +22,7 @@ bool assignmentIsComplete(const std::map<Variable*, int>& assignment);
 Variable* SelectUnassignedVariable(std::map<Variable*, int>& assignment);
 void setCaseFromIndex(int index, int val);
 void setupAssignement(const Sudoku mySudoku);
-int mainFunction();
+void mainFunction();
 void resetAssignement();
 
 
@@ -50,9 +50,11 @@ int main()
 		}
 	}
 	mainFunction();
+
+	return EXIT_SUCCESS;
 }
 
-int mainFunction()
+void mainFunction()
 {
 	//recuperation du sudoku
 	std::string sudoku = recoverSudoku();
@@ -99,6 +101,7 @@ std::map<Variable*, int> recursiveBackTrackingSearch(std::map<Variable*, int>& a
 			if (consistantValue)
 			{
 				AssignValue(var, val);
+				//Si AC3 retourne faux, cela veut dire que l'assignement a réduit un domaine à zéro valeur possible.
 				if (AC3())
 				{
 					std::map<Variable*, int> result = recursiveBackTrackingSearch(assignment);
@@ -256,6 +259,8 @@ std::vector<int> LeastConstrainingValue(Variable* targetVariable)
 	return orderedValues;
 }
 
+//Si au moins une valeur a été retirée on retourne 1, sinon on retourne 0
+//Si Retirer une valeur fait tomber un domaine à zéro valeur possibles, on retourne -1
 int RemoveInconsistentValues(Constraint& constraint)
 {
 	int removed = 0;
@@ -311,6 +316,7 @@ bool AC3()
 				constraintsQueue.push_back(Constraint(neighbour, currentConstraint.First()));
 			}
 		}
+		//Si un domaine a zéro valeur possible, on retourne faux
 		else if(result == -1)
 		{
 			return false;
