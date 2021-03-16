@@ -3,8 +3,10 @@
 #include <fstream>
 #include <string>
 
+
 Sudoku::Sudoku(std::string const sudoku)
 {
+	// Recuperation des cases du sudoku à l'aide du fichier .ss
 	int i = 0;
 	int j = 0;
 	int k = 0;
@@ -45,6 +47,7 @@ Sudoku::~Sudoku()
 
 void Sudoku::printSudoku()
 {
+	// Affichage du sudoku avec les cases bien définies
 	system("CLS");
 	std::cout << "\n";
 	for (int j = 0; j < 9; j++)

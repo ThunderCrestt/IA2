@@ -56,7 +56,9 @@ int mainFunction()
 {
 	//recuperation du sudoku
 	std::string sudoku = recoverSudoku();
+	//Creation du sudoku a partir du fichier .ss
 	mySudoku = new Sudoku(sudoku);
+	//Affichage
 	mySudoku->printSudoku();
 
 
