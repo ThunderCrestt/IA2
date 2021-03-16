@@ -320,7 +320,7 @@ bool AC3()
 std::string recoverSudoku() 
 {
 	std::locale::global(std::locale{ "" });
-	std::cout << "Entrez un chiffre entre 1 et 6 ou le nom du nouveau sudoku importé :\n";
+	std::cout << "Entrez un chiffre entre 1 et 12 ou le nom du nouveau sudoku que vous avez importé :\n";
 	std::string i;
 	std::cin >> i;
 	std::ifstream importSudoku{ "Sudoku/" + i + ".ss" };
