@@ -13,7 +13,7 @@
 bool AC3();
 void AddConstraint(Constraint* newConstraint);
 void AssignValue(Variable* variable, int value, bool withPrint = true);
-void UnassignValue(Variable* variable);
+void UnassignValue(Variable* variable,bool withPrint=true);
 std::vector<int> LeastConstrainingValue(Variable* targetVariable);
 std::string recoverSudoku();
 std::map<Variable*, int> backTrackingSearch();
@@ -22,8 +22,11 @@ bool assignmentIsComplete(const std::map<Variable*, int>& assignment);
 Variable* SelectUnassignedVariable(std::map<Variable*, int>& assignment);
 void setCaseFromIndex(int index, int val);
 void setupAssignement(const Sudoku mySudoku);
-std::map<Variable*, int> assignment;
+int mainFunction();
+void resetAssignement();
 
+
+std::map<Variable*, int> assignment;
 std::vector<Constraint*> constraints;
 std::vector<Variable*> variables;
 std::map<Variable*, int> failure;
@@ -31,34 +34,41 @@ Sudoku* mySudoku;
 
 int main()
 {
+	failure.emplace(nullptr, -1);
+	for (int i = 0; i < 81; i++)
+	{
+		variables.push_back(new Variable(i, assignment));
+	}
+
+	for (Variable* variable : variables)
+	{
+		variable->SetupNeighbours(variables);
+		std::vector<Variable*> neighbours = variable->GetNeighbours();
+		for (Variable* neighbour : neighbours)
+		{
+			AddConstraint(new Constraint(variable, neighbour));
+		}
+	}
+	mainFunction();
+}
+
+int mainFunction()
+{
 	//recuperation du sudoku
 	std::string sudoku = recoverSudoku();
 	mySudoku = new Sudoku(sudoku);
 	mySudoku->printSudoku();
 
-	failure.emplace(nullptr, -1);
-	for(int i = 0; i < 81; i++)
-	{
-		variables.push_back(new Variable(i, assignment));
-	}
 
-	for(Variable* variable : variables)
-	{
-		variable->SetupNeighbours(variables);
-		std::vector<Variable*> neighbours = variable->GetNeighbours();
-		for(Variable* neighbour : neighbours)
-		{
-			AddConstraint(new Constraint(variable, neighbour));
-		}
-	}
 	setupAssignement(*mySudoku);
 	system("pause");
 	clock_t tStart = clock();
 	backTrackingSearch();
-	std::cout << (double)(clock() - tStart) / CLOCKS_PER_SEC << std::endl;
-	
+	std::cout<<"résolu en " << (double)(clock() - tStart) / CLOCKS_PER_SEC <<" secondes"<< std::endl;
+
 	system("pause");
-	return EXIT_SUCCESS;
+	resetAssignement();
+	mainFunction();
 }
 
 std::map<Variable*, int> backTrackingSearch()
@@ -121,7 +131,7 @@ void AssignValue(Variable* variable, int value,bool withPrint)
 
 }
 
-void UnassignValue(Variable* variable)
+void UnassignValue(Variable* variable,bool withPrint)
 {
 	assignment.erase(variable);
 	variable->SetAssigned(false);
@@ -129,8 +139,11 @@ void UnassignValue(Variable* variable)
 	{
 		variable->ResetDomain(assignment);
 	}
-	setCaseFromIndex(variable->GetIndex(), 0);
-	mySudoku->printSudoku();
+	if (withPrint)
+	{
+		setCaseFromIndex(variable->GetIndex(), 0);
+		mySudoku->printSudoku();
+	}
 }
 
 void AddConstraint(Constraint* newConstraint)
@@ -336,8 +349,18 @@ void setCaseFromIndex(int index,int val)
 	mySudoku->setCase(i, j,val);
 }
 
+void resetAssignement()
+{
+	system("CLS");
+	for (auto& elem : variables)
+	{
+		UnassignValue(elem,false);
+	}
+}
+
 void setupAssignement(const Sudoku mySudoku)
 {
+
 	for (int i = 0; i < 9; i++)
 	{
 		for (int j = 0; j < 9; j++)
